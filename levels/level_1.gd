@@ -86,9 +86,11 @@ var _pip: Pip
 var _monsters: Array[Graupelz] = []
 var _collected := 0
 var _rule_index := 0
+var _was_lured := false
 
 
 func _ready() -> void:
+	Sound.play_music("level")
 	var bg := Background.new()
 	bg.level_width = LEVEL_END
 	bg.camera_bottom = CAMERA_BOTTOM
@@ -116,6 +118,11 @@ func _process(_delta: float) -> void:
 		if is_instance_valid(m) and m.player_is_lured():
 			lured = true
 	_hud.lured = lured
+	if lured != _was_lured:
+		_was_lured = lured
+		Sound.set_tension(lured)
+		if lured:
+			Sound.sfx("alert")
 
 
 func _build_platforms() -> void:
@@ -297,10 +304,13 @@ func _on_rule_collected(text: String) -> void:
 func _on_boss_defeated() -> void:
 	_pip.free_pip()
 	_portal.open = true
+	Sound.sfx("fanfare")
+	get_tree().create_timer(1.2).timeout.connect(func() -> void: Sound.sfx("portal_open"))
 	_hud.show_message("Pip ist frei!", "Graupelz ist weggelaufen – gegen ein lautes NEIN hat er keine Chance. Bring Pip zu Oma Eule ins Portal!", 6.0)
 
 
 func _on_goal_reached() -> void:
+	Sound.sfx("goal")
 	_player.controls_enabled = false
 	_player.celebrating = true
 	var tw := create_tween()

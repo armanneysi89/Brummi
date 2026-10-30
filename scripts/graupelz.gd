@@ -70,6 +70,7 @@ func on_shout(_from: Node2D) -> void:
 	if not boss:
 		_say_and_vanish()
 		return
+	Sound.sfx("stun")
 	_set_state(State.STUNNED)
 
 
@@ -80,6 +81,7 @@ func take_hit(_dir: int) -> void:
 	_invuln = 0.5
 	_hurt_t = 0.35
 	velocity = Vector2(-_dir_to_player() * 520.0, -420.0)
+	Sound.sfx("hit" if hp > 0 else "defeat", 0.0, 0.75)
 	if hp <= 0:
 		_set_state(State.FLEE)
 		defeated.emit()
@@ -93,6 +95,7 @@ func _say_and_vanish() -> void:
 	state = State.FLEE
 	_line = -1
 	collision_layer = 0
+	Sound.sfx("vanish")
 	var tw := create_tween()
 	tw.tween_interval(1.2)
 	tw.tween_property(self, "modulate:a", 0.0, 0.5)

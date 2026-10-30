@@ -24,6 +24,7 @@ func _ready() -> void:
 		if _taken or not body is Brummi:
 			return
 		_taken = true
+		Sound.sfx("star")
 		collected.emit(text)
 		var tw := create_tween().set_parallel()
 		tw.tween_property(self, "scale", Vector2(2.2, 2.2), 0.4)

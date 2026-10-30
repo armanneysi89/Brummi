@@ -29,6 +29,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if _taken or not body is Brummi:
 		return
 	_taken = true
+	Sound.coin()
 	collected.emit()
 	var tw := create_tween().set_parallel()
 	tw.tween_property(self, "position:y", position.y - 70.0, 0.3).set_ease(Tween.EASE_OUT)

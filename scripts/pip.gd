@@ -19,6 +19,7 @@ func _ready() -> void:
 
 func free_pip() -> void:
 	freed = true
+	Sound.sfx("pip")
 	_say_t = 4.0
 
 

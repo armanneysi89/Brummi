@@ -24,6 +24,10 @@ const RULES := [
 ]
 const LEVEL := "res://levels/level_1.tscn"
 const CHARS_PER_SEC := 38.0
+const MOODS := {
+	"intro1": "story_calm", "intro2": "story_calm", "intro3": "story_dark", "intro4": "story_dark",
+	"intro5": "story_hope", "intro6": "story_hope", "outro1": "story_hope", "outro2": "story_calm",
+}
 
 static var mode := "intro"
 
@@ -68,6 +72,7 @@ func _next() -> void:
 		return
 	_prev_tex = _tex
 	_tex = load("res://assets/story/%s.png" % _slides[_index][0])
+	Sound.play_music(MOODS[_slides[_index][0]], 2.0)
 	_t = 0.0
 	_chars = 0.0
 
@@ -79,6 +84,7 @@ func _input(event: InputEvent) -> void:
 		_finish()
 	elif pressed:
 		get_viewport().set_input_as_handled()
+		Sound.sfx("ui", -4.0, 1.0, 0.0)
 		match _phase:
 			"slides":
 				var text: String = _slides[_index][1]

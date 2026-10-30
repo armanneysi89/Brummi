@@ -30,6 +30,7 @@ func _ready() -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if body is Brummi and not active:
 		active = true
+		Sound.sfx("checkpoint")
 		body.spawn_point = global_position
 		create_tween().tween_property(_sprite, "modulate", Color(1.3, 1.3, 1.4), 0.4)
 

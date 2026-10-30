@@ -65,6 +65,7 @@ func take_hit(from_dir: int) -> void:
 	_flash = 0.12
 	_stun = 0.45
 	velocity = Vector2(from_dir * 420.0, -380.0)
+	Sound.sfx("hit" if hp > 0 else "pop")
 	if hp <= 0:
 		_die()
 

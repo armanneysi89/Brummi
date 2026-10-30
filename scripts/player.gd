@@ -168,9 +168,11 @@ func _physics_process(delta: float) -> void:
 			_jump_buffer = JUMP_BUFFER
 		if Input.is_action_just_pressed("punch") and _punch_t <= 0.0:
 			_punch_t = PUNCH_TIME
+			Sound.sfx("punch")
 		if Input.is_action_just_pressed("dash") and _dash_cd <= 0.0 and _stun_t <= 0.0:
 			_dash_t = DASH_TIME
 			_dash_cd = DASH_COOLDOWN
+			Sound.sfx("dash")
 		if Input.is_action_just_pressed("shout") and _shout_cd <= 0.0:
 			_shout()
 
@@ -185,6 +187,7 @@ func _physics_process(delta: float) -> void:
 			_jump_buffer = 0.0
 			_coyote = 0.0
 			_squash = Vector2(0.82, 1.18)
+			Sound.sfx("jump")
 		if controls_enabled and Input.is_action_just_released("jump") and velocity.y < -250.0:
 			velocity.y *= 0.5
 		if _stun_t > 0.0:
@@ -196,6 +199,7 @@ func _physics_process(delta: float) -> void:
 			velocity.x = 0.0
 
 	var pulled := velocity
+	var fall_speed := velocity.y
 	velocity.x += lure_pull
 	move_and_slide()
 	if lure_pull != 0.0:
@@ -203,6 +207,8 @@ func _physics_process(delta: float) -> void:
 	lure_pull = 0.0
 	if is_on_floor() and not _was_on_floor:
 		_squash = Vector2(1.18, 0.84)
+		if fall_speed > 350.0:
+			Sound.sfx("land", remap(minf(fall_speed, MAX_FALL), 350.0, MAX_FALL, -10.0, 0.0))
 	_was_on_floor = is_on_floor()
 
 	_hitbox.position.x = 80.0 * facing
@@ -232,6 +238,8 @@ func _animate(delta: float) -> void:
 		frame = "jump" if velocity.y < 0.0 else "fall"
 	elif absf(velocity.x) > 40.0:
 		frame = RUN_CYCLE[int(_anim_t * 11.0) % RUN_CYCLE.size()]
+	if grounded and frame != _frame and (frame == "run1" or frame == "run3"):
+		Sound.sfx("step", -4.0, 1.0, 0.15)
 	_set_frame(frame)
 
 	_squash = _squash.lerp(Vector2.ONE, minf(delta * 12.0, 1.0))
@@ -263,6 +271,7 @@ func _shout() -> void:
 	_shout_t = SHOUT_TIME
 	_shout_cd = SHOUT_COOLDOWN
 	shouted.emit()
+	Sound.sfx("nein", 0.0, 1.0, 0.02)
 	for node in get_tree().get_nodes_in_group("shout_listeners"):
 		if node.global_position.distance_to(global_position) < SHOUT_RADIUS:
 			node.on_shout(self)
@@ -358,6 +367,7 @@ func _hurt(away: float) -> void:
 	_invuln = INVULN_TIME
 	_stun_t = 0.35
 	velocity = Vector2(away * 520.0, -520.0)
+	Sound.sfx("hurt")
 	health_changed.emit(hp)
 	if hp <= 0:
 		respawn()
@@ -372,6 +382,7 @@ func respawn() -> void:
 
 
 func _fall_reset() -> void:
+	Sound.sfx("hurt")
 	var remaining := hp - 1
 	respawn()
 	if remaining > 0:
