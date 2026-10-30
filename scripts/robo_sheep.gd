@@ -24,6 +24,9 @@ var _eye: Node2D
 var _tex_idle: Texture2D = preload("res://assets/enemy/sheep_ref.png")
 var _tex_walk: Texture2D = preload("res://assets/enemy/sheep_walk.png")
 var _tex_hit: Texture2D = preload("res://assets/enemy/sheep_hit.png")
+## Ist sie gesetzt, wird der Gegner beim Besiegen fröhlich und zieht ab, statt zu zerplatzen.
+var _tex_happy: Texture2D = null
+var _sprite_scale := SPRITE_SCALE
 
 
 func _ready() -> void:
@@ -75,6 +78,9 @@ func _die() -> void:
 	collision_layer = 0
 	remove_from_group("enemies")
 	defeated.emit(global_position)
+	if _tex_happy:
+		_befriend()
+		return
 	for i in 12:
 		var puff := Node2D.new()
 		var r := randf_range(10.0, 22.0) * size
@@ -91,6 +97,18 @@ func _die() -> void:
 	fade.chain().tween_callback(queue_free)
 
 
+func _befriend() -> void:
+	Sound.sfx("befriend")
+	HeartShot.burst(get_parent(), global_position + Vector2(0, -50.0 * size), 8)
+	var tw := create_tween()
+	tw.tween_property(self, "position:y", position.y - 60.0, 0.25).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "position:y", position.y, 0.25).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "position:y", position.y - 40.0, 0.2).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "position:y", position.y, 0.2).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "modulate:a", 0.0, 0.8).set_delay(0.6)
+	tw.tween_callback(queue_free)
+
+
 func _ground_ahead() -> bool:
 	var from := global_position + Vector2(_dir * 50.0 * size, -10.0)
 	var query := PhysicsRayQueryParameters2D.create(from, from + Vector2(0.0, 60.0), 1)
@@ -101,9 +119,11 @@ func _process(delta: float) -> void:
 	_t += delta
 	_flash = maxf(_flash - delta, 0.0)
 	var tex := _tex_hit if _stun > 0.0 else (_tex_walk if int(_t * 6.0) % 2 == 0 else _tex_idle)
+	if _dead and _tex_happy:
+		tex = _tex_happy
 	_sprite.texture = tex
 	_sprite.flip_h = _dir > 0
-	var s := SPRITE_SCALE * size
+	var s := _sprite_scale * size
 	var squash := 1.0 + absf(sin(_t * 12.0)) * 0.04
 	_sprite.scale = Vector2(s / squash, s * squash)
 	_sprite.offset = Vector2(-tex.get_width() * 0.5, -tex.get_height())

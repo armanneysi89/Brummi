@@ -7,6 +7,10 @@ const TEX: Texture2D = preload("res://assets/objects/portal.png")
 const HEIGHT := 420.0
 
 var open := true
+var tex: Texture2D = TEX
+var height := HEIGHT
+## Leuchtpunkt als Anteil der Höhe von unten
+var glow_at := 0.5
 var _t := 0.0
 var _triggered := false
 
@@ -36,13 +40,13 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	var s := HEIGHT / TEX.get_height()
-	var w := TEX.get_width() * s
-	var c := Vector2(0, -HEIGHT * 0.5)
+	var s := height / tex.get_height()
+	var w := tex.get_width() * s
+	var c := Vector2(0, -height * glow_at)
 	var boost := 1.6 if _triggered else (1.0 if open else 0.0)
 	if open:
 		Shapes.glow(self, c, 240.0 * boost + sin(_t * 2.0) * 12.0, Color(0.35, 0.85, 1.0, 0.35), 7)
-	draw_texture_rect(TEX, Rect2(-w * 0.5, -HEIGHT + 10.0, w, HEIGHT), false, Color.WHITE if open else Color(0.55, 0.55, 0.65))
+	draw_texture_rect(tex, Rect2(-w * 0.5, -height + 10.0, w, height), false, Color.WHITE if open else Color(0.55, 0.55, 0.65))
 	if not open:
 		return
 	Shapes.glow(self, c, (70.0 + sin(_t * 3.0) * 8.0) * boost, Color(0.5, 0.95, 1.0, 0.6), 5)

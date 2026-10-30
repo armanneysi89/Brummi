@@ -10,7 +10,7 @@ const SFX_DB := -5.0
 const SILENT := -60.0
 const COIN_STEPS := [0, 2, 4, 5, 7, 9, 11, 12]
 ## Diese Stücke laufen synchron mit einer stummen Spannungs-Ebene.
-const PAIRED := {"level": "tension"}
+const PAIRED := {"level": "tension", "level2": "tension"}
 
 var _sfx_cache := {}
 var _voices: Array[AudioStreamPlayer] = []
@@ -102,11 +102,11 @@ func stop_music(fade := 1.5) -> void:
 
 ## Blendet im Level die bedrohliche Ebene ein, solange Brummi gelockt wird.
 func set_tension(on: bool) -> void:
-	if on == _tension_on or _current != "level":
+	if on == _tension_on or not PAIRED.has(_current):
 		return
 	_tension_on = on
-	_fade(_layer("level"), -14.0 if on else 0.0, 0.6)
-	_fade(_layer("tension"), 0.0 if on else SILENT, 0.6)
+	_fade(_layer(_current), -14.0 if on else 0.0, 0.6)
+	_fade(_layer(PAIRED[_current]), 0.0 if on else SILENT, 0.6)
 
 
 func _sfx_stream(sound: String) -> AudioStream:

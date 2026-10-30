@@ -22,10 +22,12 @@ const FALL_LIMIT := 1500.0
 const SHOUT_TIME := 0.5
 const SHOUT_COOLDOWN := 1.0
 const SHOUT_RADIUS := 560.0
+const SHOOT_TIME := 0.22
+const SHOOT_COOLDOWN := 0.32
 const SPRITE_SCALE := 0.7
 const RUN_CYCLE := ["run1", "run2", "run3", "run2"]
 # Horizontaler Ankerpunkt (Anteil der Bildbreite), wo der Körper sitzt
-const ANCHOR_X := {"punch": 0.36, "dash": 0.55}
+const ANCHOR_X := {"punch": 0.36, "dash": 0.55, "shoot": 0.4}
 
 const ACTIONS := {
 	"move_left": [KEY_A, KEY_LEFT],
@@ -33,7 +35,8 @@ const ACTIONS := {
 	"jump": [KEY_SPACE, KEY_W, KEY_UP],
 	"punch": [KEY_J, KEY_X],
 	"dash": [KEY_K, KEY_SHIFT],
-	"shout": [KEY_E, KEY_N, KEY_L],
+	"shout": [KEY_E, KEY_N],
+	"shoot": [KEY_L, KEY_C, KEY_H],
 	"restart": [KEY_R],
 	"advance": [KEY_ENTER, KEY_SPACE, KEY_KP_ENTER],
 	"skip": [KEY_ESCAPE],
@@ -44,11 +47,15 @@ var facing := 1
 var spawn_point := Vector2.ZERO
 var controls_enabled := true
 var celebrating := false
+## Herz-Wurf, lernt Brummi in Level 2 von Anaja
+var can_shoot := false
 # Wird von Monstern pro Frame gesetzt, die Brummi zu sich locken
 var lure_pull := 0.0
 
 var _shout_t := 0.0
 var _shout_cd := 0.0
+var _shoot_t := 0.0
+var _shoot_cd := 0.0
 var _coyote := 0.0
 var _jump_buffer := 0.0
 var _dash_t := 0.0
@@ -85,7 +92,7 @@ func _ready() -> void:
 	collision_layer = 2
 	collision_mask = 1
 
-	for f in ["idle", "run1", "run2", "run3", "jump", "fall", "punch", "dash", "hurt", "victory", "special"]:
+	for f in ["idle", "run1", "run2", "run3", "jump", "fall", "punch", "dash", "hurt", "victory", "special", "shoot"]:
 		_frames[f] = load("res://assets/brummi/bear_%s.png" % f)
 
 	var shadow := Sprite2D.new()
@@ -150,6 +157,8 @@ func _physics_process(delta: float) -> void:
 	_stun_t = maxf(_stun_t - delta, 0.0)
 	_shout_t = maxf(_shout_t - delta, 0.0)
 	_shout_cd = maxf(_shout_cd - delta, 0.0)
+	_shoot_t = maxf(_shoot_t - delta, 0.0)
+	_shoot_cd = maxf(_shoot_cd - delta, 0.0)
 
 	var dir := 0.0
 	if controls_enabled and _stun_t <= 0.0:
@@ -175,6 +184,8 @@ func _physics_process(delta: float) -> void:
 			Sound.sfx("dash")
 		if Input.is_action_just_pressed("shout") and _shout_cd <= 0.0:
 			_shout()
+		if can_shoot and Input.is_action_just_pressed("shoot") and _shoot_cd <= 0.0 and _stun_t <= 0.0:
+			_shoot()
 
 	if _dash_t > 0.0:
 		_dash_t -= delta
@@ -234,6 +245,8 @@ func _animate(delta: float) -> void:
 		frame = "dash"
 	elif _punch_t > 0.0:
 		frame = "punch"
+	elif _shoot_t > 0.0:
+		frame = "shoot"
 	elif not grounded:
 		frame = "jump" if velocity.y < 0.0 else "fall"
 	elif absf(velocity.x) > 40.0:
@@ -265,6 +278,17 @@ func _animate(delta: float) -> void:
 			_ghost_t = 0.03
 			_spawn_ghost()
 	_fx.queue_redraw()
+
+
+func _shoot() -> void:
+	_shoot_t = SHOOT_TIME
+	_shoot_cd = SHOOT_COOLDOWN
+	Sound.sfx("heart")
+	var heart := HeartShot.new()
+	heart.dir = facing
+	heart.global_position = global_position + Vector2(facing * 70.0, -72.0)
+	heart.z_index = z_index + 1
+	get_parent().add_child(heart)
 
 
 func _shout() -> void:

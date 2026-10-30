@@ -3,7 +3,7 @@ extends Control
 
 ## Bilder-Geschichte für Intro und Outro: Ken-Burns-Fahrt, Schreibmaschinentext, Weiter mit Enter/Leertaste/Klick.
 
-const INTRO := [
+const INTRO_1 := [
 	["intro1", "Im Tal der Lichter lebt Brummi, ein kleiner Teddybär mit einem großen Herzen. Am liebsten spielt er mit seinem besten Freund, dem Häschen Pip."],
 	["intro2", "Oma Eule passt auf alle Kinder im Tal auf. Sie sagt immer: „Geht niemals mit Fremden mit – auch nicht, wenn sie nett tun oder euch etwas schenken wollen!“"],
 	["intro3", "Eines Tages tauchte am Waldrand ein zotteliges Wesen auf: Graupelz. „Na, kleiner Hase? Komm mit, ich habe ganz viele Bonbons für dich! Aber psst – das ist unser Geheimnis!“"],
@@ -11,25 +11,51 @@ const INTRO := [
 	["intro5", "Brummi hatte alles gesehen. Er lief sofort zu Oma Eule und erzählte ihr alles. Das war genau richtig – Geheimnisse, die Angst machen, darf man immer verraten!"],
 	["intro6", "Oma Eule gab ihm ihren Mut-Kristall: „Wenn dich jemand locken will, dann ruf ganz laut NEIN! Lauf weg und hol Hilfe.“ Und so machte sich Brummi auf den Weg, um Pip nach Hause zu bringen."],
 ]
-const OUTRO := [
+const OUTRO_1 := [
 	["outro1", "„NEIN!“ – So laut hatte Graupelz noch nie jemanden rufen hören. Er rannte davon, so schnell er konnte. Pip war frei!"],
 	["outro2", "Zurück bei Oma Eule fielen sich alle in die Arme. „Ich gehe nie wieder mit Fremden mit“, versprach Pip. „Und wenn etwas komisch ist, sage ich es dir sofort.“"],
 ]
-const RULES := [
+const RULES_1 := [
 	"Geh nie mit Fremden mit – auch nicht, wenn sie nett tun.",
 	"Nimm keine Geschenke oder Süßigkeiten von Fremden an.",
 	"Ruf laut NEIN, lauf weg und hol dir Hilfe.",
 	"Erzähl es immer einem Erwachsenen, dem du vertraust.",
 	"Geheimnisse, die dir Angst machen, darfst du immer weitersagen.",
 ]
-const LEVEL := "res://levels/level_1.tscn"
+const INTRO_2 := [
+	["l2_intro1", "Ein paar Tage später fuhren Brummi und Pip zum großen Laternenfest an der Abendrot-Küste. Überall leuchteten Lampions, und das Meer glitzerte golden."],
+	["l2_intro2", "Auf dem Steg stand ein kleines Fuchsmädchen ganz allein und weinte. „Ich bin Anaja“, schluchzte sie. „Ich habe meine Mama im Gedränge verloren!“"],
+	["l2_intro3", "Brummi setzte sich zu ihr. „Habt ihr einen Treffpunkt ausgemacht?“ Anaja nickte und zeigte auf den Leuchtturm: „Wenn wir uns verlieren, treffen wir uns dort!“"],
+	["l2_intro4", "Plötzlich stand da jemand mit einer Matrosenmütze. „Deine Mama schickt mich, Kleine! Komm mit, ich bring dich zu ihr!“ Aber Brummi erkannte die zotteligen Ohren: Das war Graupelz!"],
+	["l2_intro5", "„NEIN!“, riefen beide. Graupelz rannte davon und rief seine Robo-Krabben und Robo-Möwen. Da zeigte Anaja Brummi ihren Zauber: „Mit Herzen werden grimmige Wesen wieder lieb!“"],
+	["l2_intro6", "Pip lief zu den Hafenleuten, um Bescheid zu sagen. Und Brummi und Anaja machten sich gemeinsam auf den Weg zum Leuchtturm."],
+]
+const OUTRO_2 := [
+	["l2_outro1", "Am Leuchtturm wartete Graupelz ein letztes Mal. Doch gegen ein lautes NEIN und eine Ladung Herzen hatte er keine Chance – und weg war er!"],
+	["l2_outro2", "„ANAJA!“ Mama Fuchs schloss ihre Tochter fest in die Arme. „Ihr habt alles richtig gemacht“, sagte sie zu Brummi. „Am Treffpunkt warten – das war sehr klug!“"],
+]
+const RULES_2 := [
+	"Verlaufen? Bleib stehen und lauf nicht kreuz und quer.",
+	"Macht vorher einen Treffpunkt aus.",
+	"Hol Hilfe bei jemandem, der dort arbeitet – oder bei einer Mama mit Kindern.",
+	"Lerne deinen Namen, deine Adresse und eine Telefonnummer.",
+	"„Deine Mama schickt mich“? Geh trotzdem nie mit Fremden mit!",
+]
+const CHAPTERS := {
+	1: {"intro": INTRO_1, "outro": OUTRO_1, "rules": RULES_1, "level": "res://levels/level_1.tscn", "title": "Level 1 – Das Tal der Lichter"},
+	2: {"intro": INTRO_2, "outro": OUTRO_2, "rules": RULES_2, "level": "res://levels/level_2.tscn", "title": "Level 2 – Die Abendrot-Küste"},
+}
 const CHARS_PER_SEC := 38.0
 const MOODS := {
 	"intro1": "story_calm", "intro2": "story_calm", "intro3": "story_dark", "intro4": "story_dark",
 	"intro5": "story_hope", "intro6": "story_hope", "outro1": "story_hope", "outro2": "story_calm",
+	"l2_intro1": "story_calm", "l2_intro2": "story_calm", "l2_intro3": "story_calm", "l2_intro4": "story_dark",
+	"l2_intro5": "story_hope", "l2_intro6": "story_hope", "l2_outro1": "story_hope", "l2_outro2": "story_calm",
 }
 
 static var mode := "intro"
+static var chapter := 1
+static var _args_read := false
 
 var _slides: Array = []
 var _index := -1
@@ -45,9 +71,13 @@ var _box := StyleBoxFlat.new()
 
 func _ready() -> void:
 	Brummi.ensure_input_actions()
-	if "--outro" in OS.get_cmdline_user_args():
-		mode = "outro"
-	_slides = OUTRO if mode == "outro" else INTRO
+	for arg in OS.get_cmdline_user_args() if not _args_read else []:
+		if arg == "--outro":
+			mode = "outro"
+		elif arg.begins_with("--chapter="):
+			chapter = clampi(arg.trim_prefix("--chapter=").to_int(), 1, CHAPTERS.size())
+	_args_read = true
+	_slides = CHAPTERS[chapter][mode]
 	_box.bg_color = Color(0.05, 0.04, 0.1, 0.72)
 	_box.set_corner_radius_all(22)
 	_box.border_color = Color(1.0, 0.85, 0.5, 0.5)
@@ -82,6 +112,12 @@ func _input(event: InputEvent) -> void:
 		or (event is InputEventMouseButton and event.pressed)
 	if event.is_action_pressed("skip"):
 		_finish()
+	elif _phase == "title" and event is InputEventKey and event.pressed and not event.echo \
+			and event.physical_keycode in [KEY_1, KEY_2]:
+		# Kapitelwahl auf dem Titelbild
+		chapter = 1 if event.physical_keycode == KEY_1 else 2
+		mode = "intro"
+		get_tree().reload_current_scene()
 	elif pressed:
 		get_viewport().set_input_as_handled()
 		Sound.sfx("ui", -4.0, 1.0, 0.0)
@@ -99,8 +135,12 @@ func _input(event: InputEvent) -> void:
 
 func _finish() -> void:
 	if mode == "outro":
+		# Nach dem Outro geht es mit dem nächsten Kapitel weiter, nach dem letzten wieder von vorn
 		mode = "intro"
-	get_tree().change_scene_to_file(LEVEL)
+		chapter = chapter + 1 if CHAPTERS.has(chapter + 1) else 1
+		get_tree().reload_current_scene()
+		return
+	get_tree().change_scene_to_file(CHAPTERS[chapter]["level"])
 
 
 func _process(delta: float) -> void:
@@ -150,15 +190,21 @@ func _on_draw() -> void:
 		var a := clampf(_t, 0.0, 1.0)
 		_text(Vector2(0, view.y * 0.36), "BRUMMI", 150, Color(1.0, 0.85, 0.4, a), view.x, HORIZONTAL_ALIGNMENT_CENTER)
 		_text(Vector2(0, view.y * 0.36 + 80), "Kleine Pfote. Große Reise.", 44, Color(1, 1, 1, a), view.x, HORIZONTAL_ALIGNMENT_CENTER)
-		_text(Vector2(0, view.y * 0.6), "Level 1 – Das Tal der Lichter", 40, Color(1, 0.95, 0.85, a), view.x, HORIZONTAL_ALIGNMENT_CENTER)
-		_text(Vector2(0, view.y * 0.6 + 70), "A/D laufen · Leertaste springen · J schlagen · K sprinten · E laut NEIN rufen", 28, Color(0.85, 0.95, 1, a), view.x, HORIZONTAL_ALIGNMENT_CENTER)
+		_text(Vector2(0, view.y * 0.6), CHAPTERS[chapter]["title"], 40, Color(1, 0.95, 0.85, a), view.x, HORIZONTAL_ALIGNMENT_CENTER)
+		var keys := "A/D laufen · Leertaste springen · J schlagen · K sprinten · E laut NEIN rufen"
+		if chapter >= 2:
+			keys += " · L Herz werfen"
+		_text(Vector2(0, view.y * 0.6 + 70), keys, 28, Color(0.85, 0.95, 1, a), view.x, HORIZONTAL_ALIGNMENT_CENTER)
 		_text(Vector2(0, view.y * 0.85), "Enter: Los geht's!", 34, Color(1, 0.9, 0.5, a * (0.6 + 0.4 * sin(_t * 4.0))), view.x, HORIZONTAL_ALIGNMENT_CENTER)
+		_text(Vector2(0, view.y - 40), "Taste 1 / 2: Level wählen", 24, Color(1, 1, 1, a * 0.6), view.x, HORIZONTAL_ALIGNMENT_CENTER)
 	else:
 		_draw_slide(_tex, 10.0 + _t, 1.0)
 		_canvas.draw_rect(Rect2(Vector2.ZERO, view), Color(0.05, 0.03, 0.1, minf(_t, 1.0) * 0.7))
 		var a := clampf(_t, 0.0, 1.0)
+		var rules: Array = CHAPTERS[chapter]["rules"]
 		_text(Vector2(0, 170), "Brummis Mut-Regeln", 72, Color(1.0, 0.85, 0.4, a), view.x, HORIZONTAL_ALIGNMENT_CENTER)
-		for i in RULES.size():
+		for i in rules.size():
 			var ra := clampf(_t - 0.5 - i * 0.4, 0.0, 1.0)
-			_text(Vector2(view.x * 0.5 - 620, 300 + i * 90), "★  " + RULES[i], 38, Color(1, 1, 1, ra))
-		_text(Vector2(0, view.y - 80), "Enter: Nochmal spielen", 32, Color(1, 0.9, 0.5, a * (0.6 + 0.4 * sin(_t * 4.0))), view.x, HORIZONTAL_ALIGNMENT_CENTER)
+			_text(Vector2(view.x * 0.5 - 620, 300 + i * 90), "★  " + rules[i], 38, Color(1, 1, 1, ra))
+		var next := "Enter: Weiter zu Level %d" % (chapter + 1) if CHAPTERS.has(chapter + 1) else "Enter: Nochmal spielen"
+		_text(Vector2(0, view.y - 80), next, 32, Color(1, 0.9, 0.5, a * (0.6 + 0.4 * sin(_t * 4.0))), view.x, HORIZONTAL_ALIGNMENT_CENTER)

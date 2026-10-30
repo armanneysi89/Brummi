@@ -20,6 +20,8 @@ var map_rects: Array[Rect2] = []
 var level_width := 7600.0
 var goal_x := 7300.0
 var player: Node2D
+var title := "LEVEL 1 – Das Tal der Lichter"
+var subtitle := "Bring Pip sicher nach Hause!"
 
 var _canvas: Control
 var _t := 0.0
@@ -92,8 +94,8 @@ func _on_draw() -> void:
 
 	if _t < 6.0:
 		var a := clampf(minf(_t * 1.5, (6.0 - _t) * 1.5), 0.0, 1.0)
-		_text(Vector2(40.0, view.y - 110.0), "LEVEL 1 – Das Tal der Lichter", 52, Color(1, 1, 1, a))
-		_text(Vector2(40.0, view.y - 60.0), "Bring Pip sicher nach Hause!", 30, Color(1.0, 0.95, 0.85, a))
+		_text(Vector2(40.0, view.y - 110.0), title, 52, Color(1, 1, 1, a))
+		_text(Vector2(40.0, view.y - 60.0), subtitle, 30, Color(1.0, 0.95, 0.85, a))
 
 	if lured:
 		var p := 0.75 + 0.25 * sin(_t * 8.0)

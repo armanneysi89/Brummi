@@ -15,6 +15,10 @@ var kind := Kind.GROUND
 var size := Vector2(400, 700)
 ## Verschiebung für bewegliche Inseln (hin und her)
 var move := Vector2.ZERO
+var ground_tex: Array[Texture2D] = GROUND_TEX
+var island_tex: Texture2D = ISLAND_TEX
+var bridge_tex: Texture2D = BRIDGE_TEX
+var fill_color := Color("3b3528")
 
 
 # Oberkante der begehbaren Fläche in Texturpixeln: erste Zeile, die über die Bildmitte fast vollständig deckend ist.
@@ -48,12 +52,12 @@ func _ready() -> void:
 			_build_ground()
 		Kind.ISLAND:
 			shape.size = Vector2(size.x, 40)
-			_add_sprite(ISLAND_TEX, Vector2(size.x * 0.5, 0), (size.x + 40.0) / ISLAND_TEX.get_width(), false, -2)
+			_add_sprite(island_tex, Vector2(size.x * 0.5, 0), (size.x + 40.0) / island_tex.get_width(), false, -2)
 		Kind.BRIDGE:
 			shape.size = Vector2(size.x + 40.0, 20)
 			cs.one_way_collision = true
-			var s := (size.x + 120.0) / BRIDGE_TEX.get_width()
-			_add_sprite(BRIDGE_TEX, Vector2(size.x * 0.5, 4), s, false, -1)
+			var s := (size.x + 120.0) / bridge_tex.get_width()
+			_add_sprite(bridge_tex, Vector2(size.x * 0.5, 4), s, false, -1)
 	cs.shape = shape
 	cs.position = shape.size * 0.5 - Vector2((shape.size.x - size.x) * 0.5, 0)
 	add_child(cs)
@@ -67,7 +71,7 @@ func _ready() -> void:
 func _build_ground() -> void:
 	var fill := Polygon2D.new()
 	fill.polygon = PackedVector2Array([Vector2(70, 60), Vector2(size.x - 70, 60), Vector2(size.x - 110, size.y), Vector2(110, size.y)])
-	fill.color = Color("3b3528")
+	fill.color = fill_color
 	fill.z_index = -3
 	add_child(fill)
 	var step := CHUNK_WIDTH - CHUNK_OVERLAP
@@ -75,7 +79,7 @@ func _build_ground() -> void:
 	var spread := (size.x + 40.0 - CHUNK_WIDTH) / maxf(count - 1, 1)
 	var seed_i := int(position.x / 100.0)
 	for i in count:
-		var tex := GROUND_TEX[(i + seed_i) % GROUND_TEX.size()]
+		var tex := ground_tex[(i + seed_i) % ground_tex.size()]
 		var x := -20.0 + CHUNK_WIDTH * 0.5 + spread * i if count > 1 else size.x * 0.5
 		var s := CHUNK_WIDTH / tex.get_width()
 		if count == 1:

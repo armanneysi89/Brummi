@@ -25,6 +25,10 @@ const HEIGHT := 300.0
 ## Bei false ist es nur eine kurze Begegnung: ein NEIN vertreibt das Monster sofort.
 var boss := true
 var max_hp := 3
+var lines: Array = LURE_LINES
+var tex_idle: Texture2D = TEX_IDLE
+## Was in der Gedankenblase lockt (null = keine Blase)
+var bait: Texture2D = CANDY
 
 var hp := 3
 var state := State.LURE
@@ -175,7 +179,7 @@ func player_is_lured() -> bool:
 
 
 func _update_sprite() -> void:
-	var tex := TEX_IDLE
+	var tex := tex_idle
 	match state:
 		State.STUNNED:
 			tex = TEX_HURT if _hurt_t > 0.0 else TEX_STUN
@@ -193,15 +197,16 @@ func _update_sprite() -> void:
 func _draw() -> void:
 	if state == State.LURE:
 		Shapes.glow(self, Vector2(0, -HEIGHT * 0.5), 260.0, Color(0.6, 0.3, 0.9, 0.18 + 0.06 * sin(_t * 3.0)), 6)
-		# Gedankenblase mit Lutscher
-		var c := Vector2(-_dir_to_player() * 40.0 + 0.0, -HEIGHT - 80.0 + sin(_t * 2.0) * 6.0)
-		draw_circle(c + Vector2(_dir_to_player() * 70.0, 60.0), 9.0, Color(1, 1, 1, 0.9))
-		draw_circle(c + Vector2(_dir_to_player() * 50.0, 38.0), 14.0, Color(1, 1, 1, 0.9))
-		draw_colored_polygon(Shapes.ellipse(c, 62.0, 52.0, 24), Color(1, 1, 1, 0.92))
-		var cs := 88.0 / CANDY.get_height()
-		draw_texture_rect(CANDY, Rect2(c - Vector2(CANDY.get_width() * cs, 88.0) * 0.5, Vector2(CANDY.get_width() * cs, 88.0)), false)
+		if bait:
+			# Gedankenblase mit dem Köder
+			var c := Vector2(-_dir_to_player() * 40.0, -HEIGHT - 80.0 + sin(_t * 2.0) * 6.0)
+			draw_circle(c + Vector2(_dir_to_player() * 70.0, 60.0), 9.0, Color(1, 1, 1, 0.9))
+			draw_circle(c + Vector2(_dir_to_player() * 50.0, 38.0), 14.0, Color(1, 1, 1, 0.9))
+			draw_colored_polygon(Shapes.ellipse(c, 62.0, 52.0, 24), Color(1, 1, 1, 0.92))
+			var cs := 88.0 / bait.get_height()
+			draw_texture_rect(bait, Rect2(c - Vector2(bait.get_width() * cs, 88.0) * 0.5, Vector2(bait.get_width() * cs, 88.0)), false)
 		if player_is_lured():
-			_draw_speech(LURE_LINES[_line % LURE_LINES.size()])
+			_draw_speech(lines[_line % lines.size()])
 	elif state == State.STUNNED:
 		for i in 4:
 			var a := _t * 4.0 + i * TAU / 4.0

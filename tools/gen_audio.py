@@ -403,6 +403,37 @@ def sfx_ui():
     return sine(ph(sweep(700, 1000, n))) * adsr(n, 0.004, 0.02, 0.6, 0.03)
 
 
+def sfx_heart():
+    n = n_of(0.3)
+    f = sweep(600, 1300, n)
+    whoosh = sweep_bp(noise(n), 1500, 5000, 0.5) * adsr(n, 0.01, 0.05, 0.4, 0.15) * 1.5
+    return mix(tri(ph(f)) * decay(n, 0.09) * 0.7, whoosh, at(bell(hz(91), 0.3, 0.12) * 0.4, 0.02))
+
+
+def sfx_befriend():
+    parts = [at(bell(hz(m), 0.6, 0.25), i * 0.06) for i, m in enumerate([79, 83, 86, 91])]
+    n = n_of(0.5)
+    boing = 0.3 * sine(ph(sweep(300, 700, n))) * decay(n, 0.15)
+    return room(mix(*parts, boing), 0.25, 0.6)
+
+
+def sfx_learn():
+    parts = [at(bell(hz(m), 1.4, 0.6), i * 0.12) for i, m in enumerate([72, 76, 79, 84, 88, 91, 96])]
+    n = n_of(2.0)
+    t = tt(n)
+    chord = sum(np.sin(TAU * hz(m) * t) for m in (60, 64, 67, 72)) * adsr(n, 0.5, 0.3, 0.7, 0.8) * 0.12
+    return room(mix(*parts, chord, hp(noise(n), 6000) * decay(n, 0.4) * 0.05), 0.35, 1.0)
+
+
+def sfx_anaja():
+    def yip(f0, f1, dur):
+        n = n_of(dur)
+        f = kf([0, .3, 1], [f0, f1, f1 * 0.8], n)
+        x = voice(f, [(900, 120, 1.0), (1900, 160, 0.6), (3000, 250, 0.2)], kf([0, .15, .6, 1], [0, 1, .7, 0], n))
+        return x / np.max(np.abs(x))
+    return room(mix(yip(520, 760, 0.16), at(yip(560, 840, 0.2), 0.2)), 0.15, 0.4)
+
+
 SFX = {  # Name: (Funktion, Lautstärke 0..1)
     "jump": (sfx_jump, 0.55), "land": (sfx_land, 0.7), "step": (sfx_step, 0.4), "coin": (sfx_coin, 0.6),
     "star": (sfx_star, 0.7), "checkpoint": (sfx_checkpoint, 0.6), "punch": (sfx_punch, 0.55),
@@ -410,7 +441,8 @@ SFX = {  # Name: (Funktion, Lautstärke 0..1)
     "nein": (sfx_nein, 0.95), "stun": (sfx_stun, 0.6), "vanish": (sfx_vanish, 0.6),
     "defeat": (sfx_defeat, 0.7), "alert": (sfx_alert, 0.6), "pip": (sfx_pip, 0.7),
     "portal_open": (sfx_portal_open, 0.65), "fanfare": (sfx_fanfare, 0.7), "goal": (sfx_goal, 0.7),
-    "ui": (sfx_ui, 0.4),
+    "ui": (sfx_ui, 0.4), "heart": (sfx_heart, 0.5), "befriend": (sfx_befriend, 0.6), "learn": (sfx_learn, 0.7),
+    "anaja": (sfx_anaja, 0.6),
 }
 
 
@@ -497,6 +529,53 @@ def music_level():
             T.add(lead(hz(m), d * spb * 0.95 + 0.05), bar * 4 + beat, 0.34 if bar < 8 else 0.3, 0.1)
             if bar >= 8:
                 T.add(pluck(hz(m + 12), 0.6, 0.3), bar * 4 + beat, 0.12, 0.4)
+    return T.render(0.3)
+
+
+def steelpan(f, dur):
+    n = n_of(dur)
+    t = tt(n)
+    x = sum(a * np.sin(TAU * f * r * t) * np.exp(-t / tau) for r, a, tau in [(1, 1, .5), (2, .45, .25), (3, .2, .12), (4.1, .1, .06)])
+    return x * np.minimum(t / 0.003, 1)
+
+
+def music_level2():
+    """Abendrot-Hafen: gleiches Tempo wie die Spannungs-Ebene, karibischer Rhythmus mit Steelpan."""
+    T = Track(16, 112)
+    spb = T.spb
+    prog = ["F", "C", "Dm", "Bb", "F", "C", "Bb", "C", "Dm", "Bb", "F", "C", "Dm", "Bb", "C", "F"]
+    for bar, ch in enumerate(prog):
+        b = bar * 4
+        T.add(pad([hz(m) for m in CH[ch]], 4 * spb + 0.3, 1300, 0.35, 0.5), b, 0.13, -0.2)
+        for beat, off in [(0, 0), (1.5, 7), (2, 12), (3, 7), (3.5, 0)]:
+            T.add(bass(hz(ROOT[ch] + off), 0.6 * spb), b + beat, 0.5)
+        for beat in (0.5, 1.5, 2.5, 3.5):
+            T.add(pluck(hz(CH[ch][1] + 12), 0.4 * spb, 0.15), b + beat, 0.16, -0.35)
+            T.add(pluck(hz(CH[ch][2] + 12), 0.4 * spb, 0.15), b + beat, 0.14, 0.35)
+        T.add(kick(), b, 0.5)
+        T.add(kick(), b + 1.5, 0.3)
+        T.add(kick(), b + 2, 0.45)
+        if bar >= 4:
+            T.add(clap(), b + 1, 0.16)
+            T.add(clap(), b + 3, 0.16)
+        for i in range(8):
+            T.add(shaker(), b + i * 0.5, 0.12 if i % 2 else 0.06, -0.2)
+
+    mel = {
+        0: [(0, 77, 1), (1, 81, .5), (1.5, 84, 1), (2.5, 81, .5), (3, 77, 1)],
+        1: [(0, 79, 1.5), (1.5, 76, .5), (2, 72, 2)],
+        2: [(0, 74, .5), (.5, 77, .5), (1, 81, 1), (2, 79, .5), (2.5, 77, .5), (3, 74, 1)],
+        3: [(0, 74, 1), (1, 77, 1), (2, 82, 2)],
+        4: [(0, 81, .5), (.5, 84, .5), (1, 89, 1), (2, 88, .5), (2.5, 84, .5), (3, 81, 1)],
+        5: [(0, 79, 1), (1, 84, 1), (2, 88, 1.5), (3.5, 84, .5)],
+        6: [(0, 86, 1), (1, 82, .5), (1.5, 81, .5), (2, 77, 1), (3, 74, 1)],
+        7: [(0, 76, .5), (.5, 79, .5), (1, 84, .5), (1.5, 79, .5), (2, 76, 1), (3, 72, 1)],
+    }
+    for bar in range(16):
+        for beat, m, d in mel[bar % 8]:
+            T.add(steelpan(hz(m), 1.2), bar * 4 + beat, 0.36, 0.15)
+            if bar >= 8:
+                T.add(steelpan(hz(m - 12), 1.0), bar * 4 + beat, 0.14, -0.3)
     return T.render(0.3)
 
 
@@ -589,7 +668,7 @@ def music_story_hope():
     return T.render(0.35)
 
 
-MUSIC = {"level": music_level, "tension": music_tension, "story_calm": music_story_calm,
+MUSIC = {"level": music_level, "level2": music_level2, "tension": music_tension, "story_calm": music_story_calm,
          "story_dark": music_story_dark, "story_hope": music_story_hope}
 
 

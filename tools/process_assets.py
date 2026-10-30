@@ -23,6 +23,7 @@ ITEMS = {
     "bear_hurt": ("brummi", None, True),
     "bear_victory": ("brummi", None, True),
     "bear_special": ("brummi", None, True),
+    "bear_shoot": ("brummi", None, True),
     "bear_portrait": ("ui", 256, True),
     "graupelz_idle": ("monster", 480, True),
     "graupelz_stunned": ("monster", 480, True),
@@ -61,13 +62,42 @@ ITEMS = {
     "bg_island1": ("background", 600, True),
     "bg_island2": ("background", 600, True),
     "bg_sky": ("background", None, False),
+    # Level 2
+    "anaja": ("characters", 360, True),
+    "anaja_sad": ("characters", 360, True),
+    "anaja_run": ("characters", 360, True),
+    "anaja_happy": ("characters", 360, True),
+    "anaja_portrait": ("ui", 256, True),
+    "mama_wave": ("characters", 480, True),
+    "graupelz_disguise": ("monster", 480, True),
+    "crab_ref": ("enemy", None, True),
+    "crab_walk": ("enemy", None, True),
+    "crab_happy": ("enemy", None, True),
+    "gull_ref": ("enemy", 240, True),
+    "gull_fly": ("enemy", 240, True),
+    "gull_happy": ("enemy", 240, True),
+    "heart_shot": ("items", 128, True),
+    "lantern": ("objects", 600, True),
+    "barrel": ("objects", 200, True),
+    "palm": ("objects", 1100, True),
+    "shells": ("objects", 200, True),
+    "anchor": ("objects", 260, True),
+    "lighthouse": ("objects", 1000, True),
+    "pier": ("terrain", 300, True),
+    "sand1": ("terrain", 900, True),
+    "sand2": ("terrain", 900, True),
+    "raft": ("terrain", 500, True),
+    "bg_boat": ("background", 600, True),
+    "bg_rock": ("background", 600, True),
+    "bg_sky2": ("background", None, False),
+    **{f"l2_{k}": ("story", None, False) for k in ("intro1", "intro2", "intro3", "intro4", "intro5", "intro6", "outro1", "outro2")},
 }
 
 # Einige Assets stammen direkt aus den Referenz-Kandidaten
-SOURCES = {"graupelz_idle": RAW / "cand" / "graupelz_101.png", "eule": RAW / "cand" / "eule_101.png"}
+SOURCES = {"graupelz_idle": RAW / "cand" / "graupelz_101.png", "eule": RAW / "cand" / "eule_101.png", "anaja": RAW / "anaja_ref.png"}
 
 # Charakter-Frames werden alle mit demselben Faktor skaliert, damit die Größe konsistent bleibt.
-CHAR_SCALE = {"bear": 0.24, "sheep": 0.17}
+CHAR_SCALE = {"bear": 0.24, "sheep": 0.17, "crab": 0.17}
 
 
 def crop_alpha(img: Image.Image, pad: int = 4) -> Image.Image:
