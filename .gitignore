@@ -1,0 +1,11 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Export-Ausgaben, alte Generierungen und Logs
+/builds/
+/tools/raw/old/
+/tools/raw/old_story/
+*.log
+__pycache__/
+/.vscode/
