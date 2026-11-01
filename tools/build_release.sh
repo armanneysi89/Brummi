@@ -3,11 +3,18 @@
 
 set -uo pipefail
 
-ROOT="$HOME/brummi"
-GODOT="$HOME/tools/Godot_v4.7.2-stable_linux.x86_64"
+ROOT="${ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+GODOT="${GODOT:-$HOME/tools/Godot_v4.7.2-stable_linux.x86_64}"
 BUILD="$ROOT/builds"
 
 mkdir -p "$BUILD"
+touch "$BUILD/.gdignore"
+
+# Der Godot-Editor setzt den Java-Pfad gern zurück; ohne ihn scheitert der Android-Export.
+SETTINGS="${XDG_CONFIG_HOME:-$HOME/.config}/godot/editor_settings-4.7.tres"
+if [[ -f "$SETTINGS" ]]; then
+    sed -i "s|^export/android/java_sdk_path = \"\"|export/android/java_sdk_path = \"${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}\"|" "$SETTINGS"
+fi
 
 if [[ ! -x "$GODOT" ]]; then
     echo "ERROR: Godot executable not found: $GODOT"
@@ -22,6 +29,7 @@ SUCCESS=()
 build() {
     local preset="$1"
     local output="$2"
+    local mode="${3:---export-release}"
 
     echo ""
     echo "======================================"
@@ -32,7 +40,7 @@ build() {
     mkdir -p "$(dirname "$output")"
 
     if "$GODOT" --headless --path "$ROOT" \
-        --export-release "$preset" "$output"; then
+        "$mode" "$preset" "$output"; then
 
         SUCCESS+=("$preset")
         echo "SUCCESS: $preset"
@@ -60,8 +68,8 @@ build "macOS" "$BUILD/macos/Brummi.zip"
 # Web
 build "Web" "$BUILD/web/index.html"
 
-# Android
-build "Android" "$BUILD/android/Brummi.apk"
+# Android (kein Release-Keystore konfiguriert, daher Debug-Signatur)
+build "Android" "$BUILD/android/Brummi.apk" --export-debug
 
 echo ""
 echo "======================================"
