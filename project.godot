@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 Sound="*res://scripts/sound.gd"
 Progress="*res://scripts/progress.gd"
+OrientationGuard="*res://scripts/orientation_guard.gd"
 
 [display]
 

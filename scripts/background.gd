@@ -3,7 +3,6 @@ extends Node2D
 
 const SKY: Texture2D = preload("res://assets/background/bg_sky.png")
 const ISLANDS: Array[Texture2D] = [preload("res://assets/background/bg_island1.png"), preload("res://assets/background/bg_island2.png")]
-const VIEW := Vector2(1920, 1080)
 
 var level_width := 7600.0
 var camera_bottom := 1200.0
@@ -14,6 +13,8 @@ var prop_y := Vector2(160.0, 480.0)
 var prop_scale := Vector2(0.28, 0.5)
 var mist_color := Color(0.85, 0.93, 1.0, 0.95)
 var fly_color := Color(1.0, 0.92, 0.5)
+
+var _view := Vector2(1920, 1080)
 
 
 class _Fireflies extends Node2D:
@@ -37,22 +38,36 @@ class _Fireflies extends Node2D:
 
 
 func _ready() -> void:
-	var cam_range := Vector2(level_width - VIEW.x, camera_bottom - VIEW.y)
+	get_viewport().size_changed.connect(_on_size_changed)
+	_build()
 
-	var sky_scale := (VIEW.y + 200.0) / sky.get_height()
+
+func _on_size_changed() -> void:
+	if get_viewport().get_visible_rect().size == _view:
+		return
+	for c in get_children():
+		c.queue_free()
+	_build()
+
+
+func _build() -> void:
+	_view = get_viewport().get_visible_rect().size
+	var cam_range := Vector2(maxf(level_width - _view.x, 1.0), maxf(camera_bottom - _view.y, 1.0))
+
+	var sky_scale := maxf((_view.y + 200.0) / sky.get_height(), _view.x / sky.get_width())
 	var sky_w := sky.get_width() * sky_scale
 	var sky_sprite := Sprite2D.new()
 	sky_sprite.texture = sky
 	sky_sprite.centered = false
 	sky_sprite.scale = Vector2(sky_scale, sky_scale)
-	_add_layer(sky_sprite, Vector2((sky_w - VIEW.x) / cam_range.x, 0.5), -30)
+	_add_layer(sky_sprite, Vector2(maxf(sky_w - _view.x, 0.0) / cam_range.x, 0.5), -30)
 
 	var islands := Node2D.new()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 5
 	var x := 200.0
 	var mid_scroll := 0.3
-	while x < level_width * mid_scroll + VIEW.x:
+	while x < level_width * mid_scroll + _view.x:
 		var sp := Sprite2D.new()
 		sp.texture = props[rng.randi() % props.size()]
 		var s := rng.randf_range(prop_scale.x, prop_scale.y)
