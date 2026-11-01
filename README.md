@@ -1,11 +1,14 @@
 # Brummi
 
+![Brummi](docs/menu.jpg)
+
 2D-Jump'n'Run für Kinder, gebaut mit Godot 4.7 (GL Compatibility). Brummi, ein mutiger Bär, bringt Pip und Anaja sicher nach Hause, sammelt Mut-Regeln und ruft laut „NEIN!“, wenn Graupelz ihn locken will.
 
 ## Levels
 
-1. Das Tal der Lichter – Bring Pip sicher nach Hause!
-2. Die Abendrot-Küste – Bring Anaja zum Leuchtturm! (Herz-Wurf, Robo-Krabben und -Möwen)
+| ![Level 1](docs/level1.jpg) | ![Level 2](docs/level2.jpg) |
+|---|---|
+| **1. Das Tal der Lichter** – Bring Pip sicher nach Hause! | **2. Die Abendrot-Küste** – Bring Anaja zum Leuchtturm! (Herz-Wurf, Robo-Krabben und -Möwen) |
 
 Level 2 wird nach Level 1 freigeschaltet.
 
