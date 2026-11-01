@@ -112,12 +112,6 @@ func _input(event: InputEvent) -> void:
 		or (event is InputEventMouseButton and event.pressed)
 	if event.is_action_pressed("skip"):
 		_finish()
-	elif _phase == "title" and event is InputEventKey and event.pressed and not event.echo \
-			and event.physical_keycode in [KEY_1, KEY_2]:
-		# Kapitelwahl auf dem Titelbild
-		chapter = 1 if event.physical_keycode == KEY_1 else 2
-		mode = "intro"
-		get_tree().reload_current_scene()
 	elif pressed:
 		get_viewport().set_input_as_handled()
 		Sound.sfx("ui", -4.0, 1.0, 0.0)
@@ -135,10 +129,8 @@ func _input(event: InputEvent) -> void:
 
 func _finish() -> void:
 	if mode == "outro":
-		# Nach dem Outro geht es mit dem nächsten Kapitel weiter, nach dem letzten wieder von vorn
-		mode = "intro"
-		chapter = chapter + 1 if CHAPTERS.has(chapter + 1) else 1
-		get_tree().reload_current_scene()
+		# Nach dem Outro zurück ins Hauptmenü
+		get_tree().change_scene_to_file("res://scenes/menu.tscn")
 		return
 	get_tree().change_scene_to_file(CHAPTERS[chapter]["level"])
 
@@ -196,7 +188,6 @@ func _on_draw() -> void:
 			keys += " · L Herz werfen"
 		_text(Vector2(0, view.y * 0.6 + 70), keys, 28, Color(0.85, 0.95, 1, a), view.x, HORIZONTAL_ALIGNMENT_CENTER)
 		_text(Vector2(0, view.y * 0.85), "Enter: Los geht's!", 34, Color(1, 0.9, 0.5, a * (0.6 + 0.4 * sin(_t * 4.0))), view.x, HORIZONTAL_ALIGNMENT_CENTER)
-		_text(Vector2(0, view.y - 40), "Taste 1 / 2: Level wählen", 24, Color(1, 1, 1, a * 0.6), view.x, HORIZONTAL_ALIGNMENT_CENTER)
 	else:
 		_draw_slide(_tex, 10.0 + _t, 1.0)
 		_canvas.draw_rect(Rect2(Vector2.ZERO, view), Color(0.05, 0.03, 0.1, minf(_t, 1.0) * 0.7))

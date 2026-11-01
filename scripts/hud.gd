@@ -14,6 +14,7 @@ var total_coins := 0
 var stars := 0
 var total_stars := 0
 var lured := false
+var touch := false
 var fade := 0.0
 # Für die Minikarte: Plattform-Rechtecke, Levelbreite, Spieler- und Zielposition
 var map_rects: Array[Rect2] = []
@@ -100,7 +101,7 @@ func _on_draw() -> void:
 	if lured:
 		var p := 0.75 + 0.25 * sin(_t * 8.0)
 		_canvas.draw_rect(Rect2(Vector2(view.x * 0.5 - 620.0, view.y * 0.8 - 62.0), Vector2(1240.0, 84.0)), Color(0.1, 0.06, 0.15, 0.6 * p))
-		_text(Vector2(0, view.y * 0.8), "Nicht mitgehen!  Drück  E  und ruf laut NEIN!", 54, Color(1.0, 0.85, 0.3, p), view.x, HORIZONTAL_ALIGNMENT_CENTER)
+		_text(Vector2(0, view.y * 0.8), "Nicht mitgehen!  Tipp auf  NEIN!" if touch else "Nicht mitgehen!  Drück  E  und ruf laut NEIN!", 54, Color(1.0, 0.85, 0.3, p), view.x, HORIZONTAL_ALIGNMENT_CENTER)
 
 	if _msg_t > 0.0:
 		var a := clampf(minf(_msg_t, 0.4) / 0.4, 0.0, 1.0)

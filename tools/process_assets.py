@@ -91,6 +91,10 @@ ITEMS = {
     "bg_rock": ("background", 600, True),
     "bg_sky2": ("background", None, False),
     **{f"l2_{k}": ("story", None, False) for k in ("intro1", "intro2", "intro3", "intro4", "intro5", "intro6", "outro1", "outro2")},
+    # Hauptmenü
+    "menu_bg": ("story", None, False),
+    "menu_card1": ("story", None, False),
+    "menu_card2": ("story", None, False),
 }
 
 # Einige Assets stammen direkt aus den Referenz-Kandidaten

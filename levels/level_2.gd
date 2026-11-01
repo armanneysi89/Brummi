@@ -118,6 +118,7 @@ var _anaja: Anaja
 
 
 func _init() -> void:
+	level_number = 2
 	level_end = 13200.0
 	goal_x = 12750.0
 	music = "level2"

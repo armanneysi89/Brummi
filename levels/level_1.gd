@@ -76,6 +76,7 @@ var _pip: Pip
 
 
 func _init() -> void:
+	level_number = 1
 	title = "LEVEL 1 – Das Tal der Lichter"
 	subtitle = "Bring Pip sicher nach Hause!"
 	platforms = PLATFORMS

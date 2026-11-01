@@ -1,0 +1,89 @@
+
+#!/usr/bin/env bash
+
+set -uo pipefail
+
+ROOT="$HOME/brummi"
+GODOT="$HOME/tools/Godot_v4.7.2-stable_linux.x86_64"
+BUILD="$ROOT/builds"
+
+mkdir -p "$BUILD"
+
+if [[ ! -x "$GODOT" ]]; then
+    echo "ERROR: Godot executable not found: $GODOT"
+    exit 1
+fi
+
+cd "$ROOT"
+
+FAILED=()
+SUCCESS=()
+
+build() {
+    local preset="$1"
+    local output="$2"
+
+    echo ""
+    echo "======================================"
+    echo "Building: $preset"
+    echo "Output:   $output"
+    echo "======================================"
+
+    mkdir -p "$(dirname "$output")"
+
+    if "$GODOT" --headless --path "$ROOT" \
+        --export-release "$preset" "$output"; then
+
+        SUCCESS+=("$preset")
+        echo "SUCCESS: $preset"
+    else
+        FAILED+=("$preset")
+        echo "FAILED: $preset"
+    fi
+}
+
+# Linux
+build "Linux" "$BUILD/linux/Brummi.x86_64"
+
+# Linux ARM64
+build "Linux ARM64" "$BUILD/linux-arm64/Brummi.arm64"
+
+# Windows
+build "Windows" "$BUILD/windows/Brummi.exe"
+
+# Windows ARM64
+build "Windows ARM64" "$BUILD/windows-arm64/Brummi.exe"
+
+# macOS
+build "macOS" "$BUILD/macos/Brummi.zip"
+
+# Web
+build "Web" "$BUILD/web/index.html"
+
+# Android
+build "Android" "$BUILD/android/Brummi.apk"
+
+echo ""
+echo "======================================"
+echo "          RELEASE SUMMARY"
+echo "======================================"
+
+echo "Successful: ${#SUCCESS[@]}"
+for item in "${SUCCESS[@]}"; do
+    echo "  OK: $item"
+done
+
+echo ""
+echo "Failed: ${#FAILED[@]}"
+for item in "${FAILED[@]}"; do
+    echo "  ERROR: $item"
+done
+
+echo ""
+echo "Build directory: $BUILD"
+
+if (( ${#FAILED[@]} > 0 )); then
+    exit 1
+fi
+
+echo "ALL BUILDS SUCCESSFUL"

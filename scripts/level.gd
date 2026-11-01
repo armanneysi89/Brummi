@@ -5,6 +5,7 @@ extends Node2D
 
 const EULE_TEX: Texture2D = preload("res://assets/characters/eule.png")
 
+var level_number := 1
 var level_end := 12400.0
 var camera_bottom := 1200
 var start := Vector2(260, 760)
@@ -214,6 +215,10 @@ func _build_player() -> void:
 	_player.health_changed.connect(func(hp: int) -> void: _hud.hp = hp)
 	add_child(_player)
 	_hud.player = _player
+	var touch := TouchControls.new()
+	touch.player = _player
+	add_child(touch)
+	_hud.touch = TouchControls.wanted()
 
 	var cam := Camera2D.new()
 	cam.position = Vector2(0, -140)
@@ -245,5 +250,6 @@ func _on_goal_reached() -> void:
 	tw.tween_interval(1.5)
 	tw.tween_property(_hud, "fade", 1.0, 1.2)
 	tw.tween_callback(func() -> void:
+		Progress.complete(level_number)
 		Story.mode = "outro"
 		get_tree().change_scene_to_file("res://scenes/story.tscn"))
